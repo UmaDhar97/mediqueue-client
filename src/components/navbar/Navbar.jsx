@@ -12,7 +12,7 @@ const Navbar = () => {
 
   const dropdownRef = useRef();
 
-  const { user, logoutUser } = useContext(AuthContext);
+  const { user, logoutUser, isAdmin } = useContext(AuthContext);
 
   // CLOSE DROPDOWN WHEN CLICK OUTSIDE
   useEffect(() => {
@@ -155,35 +155,11 @@ const Navbar = () => {
                         <div className="flex flex-col mt-4 gap-2">
 
                           <Link
-                            to="/profile"
+                            to="/dashboard"
                             onClick={() => setDropdown(false)}
-                            className="px-4 py-3 rounded-xl hover:bg-orange-50 duration-300"
+                            className="px-4 py-3 rounded-xl hover:bg-orange-50 duration-300 font-semibold"
                           >
-                            My Profile
-                          </Link>
-
-                          <Link
-                            to="/addTutor"
-                            onClick={() => setDropdown(false)}
-                            className="px-4 py-3 rounded-xl hover:bg-orange-50 duration-300"
-                          >
-                            Add Tutor
-                          </Link>
-
-                          <Link
-                            to="/myTutors"
-                            onClick={() => setDropdown(false)}
-                            className="px-4 py-3 rounded-xl hover:bg-orange-50 duration-300"
-                          >
-                            My Tutors
-                          </Link>
-
-                          <Link
-                            to="/myBookedSessions"
-                            onClick={() => setDropdown(false)}
-                            className="px-4 py-3 rounded-xl hover:bg-orange-50 duration-300"
-                          >
-                            Booked Sessions
+                            {isAdmin ? "Admin Dashboard" : "Dashboard"}
                           </Link>
 
                           <button
@@ -250,31 +226,11 @@ const Navbar = () => {
 
                 {
                   user && (
-                    <>
-                      <li>
-                        <Link to="/profile">
-                          My Profile
-                        </Link>
-                      </li>
-
-                      <li>
-                        <Link to="/addTutor">
-                          Add Tutor
-                        </Link>
-                      </li>
-
-                      <li>
-                        <Link to="/myTutors">
-                          My Tutors
-                        </Link>
-                      </li>
-
-                      <li>
-                        <Link to="/myBookedSessions">
-                          Booked Sessions
-                        </Link>
-                      </li>
-                    </>
+                    <li>
+                      <Link to="/dashboard">
+                        {isAdmin ? "Admin Dashboard" : "Dashboard"}
+                      </Link>
+                    </li>
                   )
                 }
 

@@ -1,33 +1,26 @@
-import { useEffect, useState } from "react";
-import TutorCard from "../../components/TutorCard";
+import axios from "axios";
 
-const Tutors = () => {
-  const [tutors, setTutors] = useState([]);
+// BEFORE: API_URL was hardcoded to "http://localhost:5000"
+// That means after you deployed the client (Vercel/Netlify), every
+// single request from this file still tried to hit YOUR OWN laptop's
+// localhost:5000, which doesn't exist on the visitor's machine.
+// That is the #1 reason most pages/routes look "broken" in production.
+export const API_URL = import.meta.env.VITE_API_URL;
 
-  useEffect(() => {
-    fetch("http://localhost:5000/tutors")
-      .then(res => res.json())
-      .then(data => setTutors(data));
-  }, []);
+const axiosInstance = axios.create({
+  baseURL: API_URL,
+});
 
-  return (
-    <div className="max-w-7xl mx-auto py-20 px-4">
-      <h2 className="text-4xl font-bold text-center mb-10">
-        All Tutors
-      </h2>
+export default axiosInstance;
 
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {
-          tutors.map(tutor => (
-            <TutorCard
-              key={tutor._id}
-              tutor={tutor}
-            ></TutorCard>
-          ))
-        }
-      </div>
-    </div>
-  )
-}
+// Get all tutors
+export const getTutors = async () => {
+  const { data } = await axiosInstance.get("/tutors");
+  return data;
+};
 
-export default Tutors
+// Get tutor by ID
+export const getTutorById = async (id) => {
+  const { data } = await axiosInstance.get(`/tutors/${id}`);
+  return data;
+};

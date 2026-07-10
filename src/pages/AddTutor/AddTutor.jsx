@@ -1,12 +1,15 @@
 import axios from "axios";
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import toast from "react-hot-toast";
 import { AuthContext } from "../../providers/AuthProvider";
 import { Helmet } from "react-helmet-async";
+import { API_URL } from "../../api/Tutors API Fetch";
 
 const AddTutor = () => {
 
   const { user } = useContext(AuthContext);
+
+  const [submitting, setSubmitting] = useState(false);
 
   const handleAddTutor = async (e) => {
 
@@ -32,30 +35,50 @@ const AddTutor = () => {
       createdBy: user?.displayName,
     };
 
+    setSubmitting(true);
+
     try {
 
       const token = localStorage.getItem("token");
 
       const { data } = await axios.post(
-        "http://localhost:5000/tutors",
+        `${API_URL}/tutors`,
         tutorData,
         {
           headers: {
             authorization: `Bearer ${token}`,
           },
+          timeout: 15000, // BEFORE: no timeout, so a stuck/failed request
+                          // just spun forever with no feedback at all
         }
       );
 
       if (data.insertedId) {
-
         toast.success("Tutor Added Successfully");
-
         form.reset();
+      } else {
+        toast.error("Could not add tutor. Please try again.");
       }
 
     } catch (error) {
 
-      toast.error(error.message);
+      if (error.response?.status === 403) {
+        // This is the exact case that used to look like "stuck loading":
+        // only an account with role "admin" in the users collection can
+        // add a tutor. If you registered normally, your role defaults to
+        // "student". Go to MongoDB Atlas -> mediqueueDB -> users collection,
+        // find your document by email, and change role from "student" to "admin".
+        toast.error("Only admin accounts can add a tutor.");
+      } else if (error.response?.status === 401) {
+        toast.error("Please login again.");
+      } else if (error.code === "ECONNABORTED") {
+        toast.error("Server took too long to respond. Please try again.");
+      } else {
+        toast.error(error.message || "Something went wrong.");
+      }
+
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -168,9 +191,10 @@ const AddTutor = () => {
           </select>
 
           <button
-            className="md:col-span-2 bg-orange-500 text-white py-4 rounded-xl font-bold"
+            disabled={submitting}
+            className="md:col-span-2 bg-orange-500 text-white py-4 rounded-xl font-bold disabled:opacity-60"
           >
-            Submit Tutor
+            {submitting ? "Adding..." : "Submit Tutor"}
           </button>
 
         </form>

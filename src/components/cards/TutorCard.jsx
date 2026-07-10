@@ -1,16 +1,29 @@
 import { FaStar, FaClock } from "react-icons/fa";
 import { IoLocationOutline } from "react-icons/io5";
+import { useNavigate } from "react-router-dom";
 
 const TutorCard = ({ tutor }) => {
 
+  const navigate = useNavigate();
+
   const {
+    _id,
     tutorName,
     image,
+    photo,
     subject,
     fee,
+    hourlyFee,
     location,
     experience,
   } = tutor;
+
+  // BEFORE: this button had no onClick / no <Link>, so clicking
+  // "Book Session" on Home & Tutors pages did absolutely nothing.
+  const handleBookSession = () => {
+    if (!_id) return; // dummy/static card without a real db id
+    navigate(`/tutor/${_id}`);
+  };
 
   return (
     <div className="bg-white rounded-[30px] overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 border border-orange-100 group">
@@ -19,7 +32,7 @@ const TutorCard = ({ tutor }) => {
       <div className="overflow-hidden relative">
 
         <img
-          src={image}
+          src={image || photo}
           alt={tutorName}
           className="h-[260px] w-full object-cover group-hover:scale-110 transition-all duration-700"
         />
@@ -71,12 +84,15 @@ const TutorCard = ({ tutor }) => {
             </p>
 
             <h3 className="text-3xl font-bold text-orange-500">
-              ${fee}
+              ${fee || hourlyFee}
             </h3>
 
           </div>
 
-          <button className="bg-orange-500 hover:bg-orange-600 transition-all duration-300 text-white px-6 py-3 rounded-2xl font-semibold shadow-lg shadow-orange-100">
+          <button
+            onClick={handleBookSession}
+            className="bg-orange-500 hover:bg-orange-600 transition-all duration-300 text-white px-6 py-3 rounded-2xl font-semibold shadow-lg shadow-orange-100"
+          >
             Book Session
           </button>
 

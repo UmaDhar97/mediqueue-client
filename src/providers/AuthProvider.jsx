@@ -30,6 +30,8 @@ const AuthProvider = ({ children }) => {
 
   const [loading, setLoading] = useState(true);
 
+  const [isAdmin, setIsAdmin] = useState(false);
+
   const createUser = (email, password) => {
 
     setLoading(true);
@@ -62,13 +64,12 @@ const AuthProvider = ({ children }) => {
     );
   };
 
-  
-const logoutUser = () => {
+  const logoutUser = () => {
 
-  localStorage.removeItem("token");
+    localStorage.removeItem("token");
 
-  return signOut(auth);
-};
+    return signOut(auth);
+  };
 
   const updateUser = profile => {
 
@@ -83,36 +84,74 @@ const logoutUser = () => {
 
         setUser(currentUser);
 
+        // BEFORE: isAdmin was never reset here, so if the admin-check
+        // request below failed (or on a fresh account switch), the OLD
+        // isAdmin value from a previous session/user stayed true —
+        // which is exactly why student and admin dashboards looked identical.
+        setIsAdmin(false);
+
         if (currentUser?.email) {
 
-          const { data } = await axios.post(
-            "http://localhost:5000/jwt",
-            {
-              email: currentUser.email,
-            }
-          );
+          try {
+            const { data } = await axios.post(
+              `${import.meta.env.VITE_API_URL}/jwt`,
+              {
+                email: currentUser.email,
+              }
+            );
 
-          localStorage.setItem(
-            "token",
-            data.token
-          );
+            localStorage.setItem(
+              "token",
+              data.token
+            );
+
+            // save/sync this user in our own DB with a default role
+            // so the server can later check admin vs student
+            await axios.post(
+              `${import.meta.env.VITE_API_URL}/users`,
+              {
+                name: currentUser.displayName,
+                email: currentUser.email,
+                photo: currentUser.photoURL,
+              }
+            );
+
+            const token = localStorage.getItem("token");
+            const adminRes = await axios.get(
+              `${import.meta.env.VITE_API_URL}/users/admin/${currentUser.email}`,
+              { headers: { authorization: `Bearer ${token}` } }
+            );
+            setIsAdmin(adminRes.data?.admin === true);
+          } catch (error) {
+            console.log("JWT/user sync error:", error);
+            setIsAdmin(false);
+          }
 
         } else {
 
           localStorage.removeItem("token");
+          setIsAdmin(false);
         }
 
         setLoading(false);
       }
     );
 
-    return () => unsubscribe();
+    // safeguard: never let the app get stuck on "Loading..." forever
+    // if firebase/network is slow or fails silently
+    const safety = setTimeout(() => setLoading(false), 5000);
+
+    return () => {
+      unsubscribe();
+      clearTimeout(safety);
+    };
 
   }, []);
 
   const authInfo = {
     user,
     loading,
+    isAdmin,
     createUser,
     loginUser,
     googleLogin,

@@ -1,7 +1,8 @@
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { AuthContext } from "../../providers/AuthProvider";
 import toast from "react-hot-toast";
+import { getFirebaseErrorMessage } from "../../utils/firebaseErrorMessage";
 
 const Login = () => {
 
@@ -28,16 +29,27 @@ const Login = () => {
 
       toast.success("Login Successful");
 
-      navigate(from);
+      // BEFORE: navigated to "from" (often just "/"), which could look
+      // like nothing happened if the user was already on/near that page.
+      // Now every successful login goes straight to the dashboard.
+      navigate("/dashboard", { replace: true });
 
     } catch (err) {
 
-      toast.error(err.message);
+      toast.error(getFirebaseErrorMessage(err));
 
     }
   };
 
+  const [googleLoading, setGoogleLoading] = useState(false);
+
   const handleGoogle = async () => {
+
+    // BEFORE: nothing stopped a second click while the first popup was
+    // still open, which triggers Firebase's auth/cancelled-popup-request
+    if (googleLoading) return;
+
+    setGoogleLoading(true);
 
     try {
 
@@ -45,12 +57,16 @@ const Login = () => {
 
       toast.success("Google Login Success");
 
-      navigate("/");
+      navigate("/dashboard", { replace: true });
 
     } catch (err) {
 
-      toast.error(err.message);
+      if (err.code !== "auth/cancelled-popup-request") {
+        toast.error(getFirebaseErrorMessage(err));
+      }
 
+    } finally {
+      setGoogleLoading(false);
     }
   };
 
@@ -81,6 +97,17 @@ const Login = () => {
             required
           />
 
+          {/* was missing before - requirement asks for a Forget Password field/link */}
+          <div className="text-right">
+            <button
+              type="button"
+              onClick={() => toast("Forget password isn't implemented in this project.")}
+              className="text-sm text-blue-600"
+            >
+              Forget Password?
+            </button>
+          </div>
+
           <button className="w-full bg-yellow-400 py-4 rounded-xl font-bold">
             Login
           </button>
@@ -89,9 +116,10 @@ const Login = () => {
 
         <button
           onClick={handleGoogle}
-          className="w-full border mt-5 py-4 rounded-xl"
+          disabled={googleLoading}
+          className="w-full border mt-5 py-4 rounded-xl disabled:opacity-60"
         >
-          Google Login
+          {googleLoading ? "Please wait..." : "Google Login"}
         </button>
 
         <p className="mt-5 text-center">

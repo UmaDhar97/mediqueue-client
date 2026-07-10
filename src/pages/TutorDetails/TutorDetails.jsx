@@ -3,6 +3,7 @@ import { useContext, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { AuthContext } from "../../providers/AuthProvider";
 import toast from "react-hot-toast";
+import { API_URL } from "../../api/Tutors API Fetch";
 
 const TutorDetails = () => {
 
@@ -14,7 +15,7 @@ const TutorDetails = () => {
 
   useEffect(() => {
 
-    fetch(`http://localhost:5000/tutors/${id}`)
+    fetch(`${API_URL}/tutors/${id}`)
       .then(res => res.json())
       .then(data => setTutor(data));
 
@@ -43,7 +44,7 @@ const TutorDetails = () => {
       const token = localStorage.getItem("token");
 
       const { data } = await axios.post(
-        "http://localhost:5000/bookings",
+        `${API_URL}/bookings`,
         bookingData,
         {
           headers: {

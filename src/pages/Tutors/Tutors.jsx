@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import TutorCard from "../../components/cards/TutorCard";
+import { API_URL } from "../../api/Tutors API Fetch";
 
 const Tutors = () => {
 
@@ -7,7 +8,7 @@ const Tutors = () => {
 
   useEffect(() => {
 
-    fetch("http://localhost:5000/tutors")
+    fetch(`${API_URL}/tutors`)
       .then(res => res.json())
       .then(data => setTutors(data));
 

@@ -2,12 +2,12 @@ import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyBI_D8bWtT3uheWZaoCDPczLQ-5OsX7Aoo",
-  authDomain: "mediqueue-7a5c0.firebaseapp.com",
-  projectId: "mediqueue-7a5c0",
-  storageBucket: "mediqueue-7a5c0.appspot.com",
-  messagingSenderId: "601461109359",
-  appId: "1:601461109359:web:f6986dfcfe6357a893139a"
+  apiKey: import.meta.env.VITE_apiKey,
+  authDomain: import.meta.env.VITE_authDomain,
+  projectId: import.meta.env.VITE_projectId,
+  storageBucket: import.meta.env.VITE_storageBucket,
+  messagingSenderId: import.meta.env.VITE_messagingSenderId,
+  appId: import.meta.env.VITE_appId,
 };
 
 // Initialize Firebase

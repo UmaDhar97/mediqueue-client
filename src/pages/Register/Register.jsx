@@ -2,6 +2,7 @@ import { useContext, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { AuthContext } from "../../providers/AuthProvider";
 import toast from "react-hot-toast";
+import { getFirebaseErrorMessage } from "../../utils/firebaseErrorMessage";
 
 const Register = () => {
 
@@ -45,18 +46,26 @@ const Register = () => {
         photoURL: photo,
       });
 
-      toast.success("Registration Successful");
+      toast.success("Registration Successful. Please login.");
 
-      navigate("/");
+      // BEFORE: this navigated to "/" (Home). The requirement says a
+      // successful registration must send the user to the Login page.
+      navigate("/login");
 
     } catch (err) {
 
-      toast.error(err.message);
+      toast.error(getFirebaseErrorMessage(err));
 
     }
   };
 
+  const [googleLoading, setGoogleLoading] = useState(false);
+
   const handleGoogle = async () => {
+
+    if (googleLoading) return;
+
+    setGoogleLoading(true);
 
     try {
 
@@ -64,12 +73,16 @@ const Register = () => {
 
       toast.success("Google Login Success");
 
-      navigate("/");
+      navigate("/dashboard", { replace: true });
 
     } catch (err) {
 
-      toast.error(err.message);
+      if (err.code !== "auth/cancelled-popup-request") {
+        toast.error(getFirebaseErrorMessage(err));
+      }
 
+    } finally {
+      setGoogleLoading(false);
     }
   };
 
@@ -132,9 +145,10 @@ const Register = () => {
 
         <button
           onClick={handleGoogle}
-          className="w-full border mt-5 py-4 rounded-xl"
+          disabled={googleLoading}
+          className="w-full border mt-5 py-4 rounded-xl disabled:opacity-60"
         >
-          Google Login
+          {googleLoading ? "Please wait..." : "Google Login"}
         </button>
 
         <p className="mt-5 text-center">

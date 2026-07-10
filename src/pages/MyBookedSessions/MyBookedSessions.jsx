@@ -2,6 +2,7 @@ import axios from "axios";
 import { useContext, useEffect, useState } from "react";
 import { AuthContext } from "../../providers/AuthProvider";
 import toast from "react-hot-toast";
+import { API_URL } from "../../api/Tutors API Fetch";
 
 const MyBookedSessions = () => {
 
@@ -14,7 +15,7 @@ const MyBookedSessions = () => {
     const token = localStorage.getItem("token");
 
     axios.get(
-      `http://localhost:5000/bookings?email=${user?.email}`,
+      `${API_URL}/bookings?email=${user?.email}`,
       {
         headers: {
           authorization: `Bearer ${token}`,
@@ -30,7 +31,7 @@ const MyBookedSessions = () => {
     try {
 
       await axios.patch(
-        `http://localhost:5000/bookings/${id}`
+        `${API_URL}/bookings/${id}`
       );
 
       const remaining = bookings.filter(
